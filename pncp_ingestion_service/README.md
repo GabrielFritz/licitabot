@@ -109,22 +109,26 @@ docker-compose --profile test up
 ### Credenciais RabbitMQ
 
 - **URL**: `amqp://admin:admin123@rabbitmq:5672/`
-- **Management UI**: http://localhost:15672
+- **Management UI**: <http://localhost:15672>
 - **Usuário**: `admin`
 - **Senha**: `admin123`
 
 ## 📨 Mensagens Aceitas
 
 ### Modo Update (padrão)
+
 ```json
 {}
 ```
+
 ou
+
 ```json
 {"mode": "update"}
 ```
 
 ### Modo Backfill
+
 ```json
 {
   "mode": "backfill",
@@ -135,7 +139,7 @@ ou
 
 ## 📊 Estrutura do Projeto
 
-```
+```text
 pncp_ingestion_service/
 ├── ingestor/
 │   ├── consumer.py          # Worker RabbitMQ
@@ -179,7 +183,8 @@ docker-compose logs pncp-tests
 
 ### RabbitMQ Management UI
 
-Acesse http://localhost:15672 para:
+Acesse <http://localhost:15672> para:
+
 - Visualizar filas e mensagens
 - Monitorar conexões
 - Enviar mensagens de teste
@@ -188,7 +193,8 @@ Acesse http://localhost:15672 para:
 ## 📝 Logs
 
 O serviço imprime logs no formato:
-```
+
+```text
 [ingestor] mode=update  window=2025-01-10T14:45:00 → 2025-01-10T15:00:00  (Δ=900s)
 [✓] 07854402000100-1-000054/2025 2025-01-10T14:47:32 — 5 itens
 ```
@@ -199,4 +205,4 @@ O serviço imprime logs no formato:
 - [ ] Publicação em fila `ingest.persist`
 - [ ] Métricas e monitoramento
 - [ ] Tratamento de erros robusto
-- [ ] Testes automatizados 
+- [ ] Testes automatizados

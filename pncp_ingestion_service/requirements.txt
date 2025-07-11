@@ -1,0 +1,23 @@
+# PNCP Ingestion Service Dependencies
+
+# Async RabbitMQ client
+aio-pika==9.3.1
+
+# Async HTTP client for PNCP API calls
+httpx==0.25.2
+
+# Data validation and serialization
+pydantic==2.5.0
+
+# Database ORM (for future persistence tasks)
+SQLAlchemy==2.0.23
+
+# PostgreSQL drivers (for future persistence tasks)
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Retry logic for API rate limiting
+tenacity==8.2.3
+
+# Additional utilities
+python-dotenv==1.0.0 

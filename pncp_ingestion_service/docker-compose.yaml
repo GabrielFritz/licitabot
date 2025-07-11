@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # RabbitMQ for message queue
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: pncp-rabbitmq
+    ports:
+      - "5672:5672"      # AMQP protocol
+      - "15672:15672"    # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PNCP Ingestion Service
+  pncp-ingestor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pncp-ingestor
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - TZ=America/Cuiaba
+    env_file:
+      - .env.local
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Test Service
+  pncp-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pncp-tests
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - TZ=America/Cuiaba
+    env_file:
+      - .env.local
+    volumes:
+      - ./tests:/app/tests
+      - ./ingestor:/app/ingestor
+    command: ["python", "tests/run_all_tests.py"]
+    profiles:
+      - test
+
+  # Optional: Redis for caching (future use)
+  redis:
+    image: redis:7-alpine
+    container_name: pncp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    profiles:
+      - cache
+
+volumes:
+  rabbitmq_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: pncp-network 

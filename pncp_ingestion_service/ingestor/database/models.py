@@ -41,7 +41,9 @@ class OrgaoEntidade(Base):
 
     # Relationships
     contratacoes: Mapped[List["Contratacao"]] = relationship(
-        "Contratacao", back_populates="orgao_entidade"
+        "Contratacao",
+        back_populates="orgao_entidade",
+        foreign_keys="Contratacao.orgao_entidade_id",
     )
     orgaos_sub_rogados: Mapped[List["Contratacao"]] = relationship(
         "Contratacao",
@@ -72,7 +74,9 @@ class UnidadeOrgao(Base):
 
     # Relationships
     contratacoes: Mapped[List["Contratacao"]] = relationship(
-        "Contratacao", back_populates="unidade_orgao"
+        "Contratacao",
+        back_populates="unidade_orgao",
+        foreign_keys="Contratacao.unidade_orgao_id",
     )
     unidades_sub_rogadas: Mapped[List["Contratacao"]] = relationship(
         "Contratacao",
@@ -132,62 +136,65 @@ class Contratacao(Base):
 
     __tablename__ = "contratacoes"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    numero_controle_pncp = Column(String(100), unique=True, nullable=False, index=True)
-    srp = Column(Boolean, nullable=False)
+    numero_controle_pncp = Column(String(100), primary_key=True)
+    srp = Column(Boolean, nullable=True)
 
     # Foreign Keys
     orgao_entidade_id = Column(
-        Integer, ForeignKey("orgaos_entidades.id"), nullable=False
+        Integer, ForeignKey("orgaos_entidades.id"), nullable=True
     )
-    unidade_orgao_id = Column(Integer, ForeignKey("unidades_orgaos.id"), nullable=False)
-    unidade_sub_rogada_id = Column(Integer, ForeignKey("unidades_orgaos.id"))
-    orgao_sub_rogado_id = Column(Integer, ForeignKey("orgaos_entidades.id"))
-    amparo_legal_id = Column(Integer, ForeignKey("amparos_legais.id"), nullable=False)
+    unidade_orgao_id = Column(Integer, ForeignKey("unidades_orgaos.id"), nullable=True)
+    unidade_sub_rogada_id = Column(
+        Integer, ForeignKey("unidades_orgaos.id"), nullable=True
+    )
+    orgao_sub_rogado_id = Column(
+        Integer, ForeignKey("orgaos_entidades.id"), nullable=True
+    )
+    amparo_legal_id = Column(Integer, ForeignKey("amparos_legais.id"), nullable=True)
 
     # Datas
-    data_inclusao = Column(DateTime, nullable=False)
-    data_publicacao_pncp = Column(DateTime, nullable=False)
-    data_atualizacao = Column(DateTime, nullable=False)
-    data_atualizacao_global = Column(DateTime, nullable=False, index=True)
-    data_abertura_proposta = Column(DateTime)
-    data_encerramento_proposta = Column(DateTime)
+    data_inclusao = Column(DateTime, nullable=True)
+    data_publicacao_pncp = Column(DateTime, nullable=True)
+    data_atualizacao = Column(DateTime, nullable=True)
+    data_atualizacao_global = Column(DateTime, nullable=True, index=True)
+    data_abertura_proposta = Column(DateTime, nullable=True)
+    data_encerramento_proposta = Column(DateTime, nullable=True)
 
     # Identificação
-    ano_compra = Column(Integer, nullable=False)
-    sequencial_compra = Column(Integer, nullable=False)
-    numero_compra = Column(String(100), nullable=False)
-    processo = Column(String(100), nullable=False)
+    ano_compra = Column(Integer, nullable=True)
+    sequencial_compra = Column(Integer, nullable=True)
+    numero_compra = Column(String(100), nullable=True)
+    processo = Column(String(100), nullable=True)
 
     # Modalidade
-    modalidade_id = Column(Integer, nullable=False)
-    modalidade_nome = Column(String(100), nullable=False)
-    modo_disputa_id = Column(Integer)
-    modo_disputa_nome = Column(String(100))
+    modalidade_id = Column(Integer, nullable=True)
+    modalidade_nome = Column(String(100), nullable=True)
+    modo_disputa_id = Column(Integer, nullable=True)
+    modo_disputa_nome = Column(String(100), nullable=True)
 
     # Objeto e valores
-    objeto_compra = Column(Text, nullable=False)
-    valor_total_estimado = Column(DECIMAL(20, 2))
-    valor_total_homologado = Column(DECIMAL(20, 2))
+    objeto_compra = Column(Text, nullable=True)
+    valor_total_estimado = Column(DECIMAL(20, 2), nullable=True)
+    valor_total_homologado = Column(DECIMAL(20, 2), nullable=True)
 
     # Campos livres
-    informacao_complementar = Column(Text)
-    justificativa_presencial = Column(Text)
+    informacao_complementar = Column(Text, nullable=True)
+    justificativa_presencial = Column(Text, nullable=True)
 
     # Links
-    link_sistema_origem = Column(String(500))
-    link_processo_eletronico = Column(String(500))
+    link_sistema_origem = Column(String(500), nullable=True)
+    link_processo_eletronico = Column(String(500), nullable=True)
 
     # Situação
-    situacao_compra_id = Column(String(10), nullable=False)
-    situacao_compra_nome = Column(String(100), nullable=False)
+    situacao_compra_id = Column(String(10), nullable=True)
+    situacao_compra_nome = Column(String(100), nullable=True)
 
     # Instrumento
-    tipo_instrumento_convocatorio_codigo = Column(Integer)
-    tipo_instrumento_convocatorio_nome = Column(String(100))
+    tipo_instrumento_convocatorio_codigo = Column(Integer, nullable=True)
+    tipo_instrumento_convocatorio_nome = Column(String(100), nullable=True)
 
     # Usuário
-    usuario_nome = Column(String(255), nullable=False)
+    usuario_nome = Column(String(255), nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=func.now())
@@ -195,10 +202,10 @@ class Contratacao(Base):
 
     # Relationships
     orgao_entidade: Mapped["OrgaoEntidade"] = relationship(
-        "OrgaoEntidade", back_populates="contratacoes"
+        "OrgaoEntidade", back_populates="contratacoes", foreign_keys=[orgao_entidade_id]
     )
     unidade_orgao: Mapped["UnidadeOrgao"] = relationship(
-        "UnidadeOrgao", back_populates="contratacoes"
+        "UnidadeOrgao", back_populates="contratacoes", foreign_keys=[unidade_orgao_id]
     )
     unidade_sub_rogada: Mapped[Optional["UnidadeOrgao"]] = relationship(
         "UnidadeOrgao", foreign_keys=[unidade_sub_rogada_id]
@@ -235,62 +242,64 @@ class ItemContratacao(Base):
     __tablename__ = "itens_contratacao"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    contratacao_id = Column(Integer, ForeignKey("contratacoes.id"), nullable=False)
+    numero_controle_pncp = Column(
+        String(100), ForeignKey("contratacoes.numero_controle_pncp"), nullable=False
+    )
 
-    numero_item = Column(Integer, nullable=False)
-    descricao = Column(Text, nullable=False)
-    quantidade = Column(DECIMAL(15, 3), nullable=False)
-    unidade_medida = Column(String(50), nullable=False)
+    numero_item = Column(Integer, nullable=True)
+    descricao = Column(Text, nullable=True)
+    quantidade = Column(DECIMAL(15, 3), nullable=True)
+    unidade_medida = Column(String(50), nullable=True)
 
-    material_ou_servico = Column(String(10), nullable=False)
-    material_ou_servico_nome = Column(String(100), nullable=False)
+    material_ou_servico = Column(String(10), nullable=True)
+    material_ou_servico_nome = Column(String(100), nullable=True)
 
-    valor_unitario_estimado = Column(DECIMAL(20, 2))
-    valor_total = Column(DECIMAL(20, 2))
+    valor_unitario_estimado = Column(DECIMAL(20, 2), nullable=True)
+    valor_total = Column(DECIMAL(20, 2), nullable=True)
 
-    orcamento_sigiloso = Column(Boolean, nullable=False)
+    orcamento_sigiloso = Column(Boolean, nullable=True)
 
     # Categoria e julgamento
-    item_categoria_id = Column(Integer, nullable=False)
-    item_categoria_nome = Column(String(100), nullable=False)
-    criterio_julgamento_id = Column(Integer, nullable=False)
-    criterio_julgamento_nome = Column(String(100), nullable=False)
-    situacao_compra_item = Column(Integer, nullable=False)
-    situacao_compra_item_nome = Column(String(100), nullable=False)
+    item_categoria_id = Column(Integer, nullable=True)
+    item_categoria_nome = Column(String(100), nullable=True)
+    criterio_julgamento_id = Column(Integer, nullable=True)
+    criterio_julgamento_nome = Column(String(100), nullable=True)
+    situacao_compra_item = Column(Integer, nullable=True)
+    situacao_compra_item_nome = Column(String(100), nullable=True)
 
     # Benefício
-    tipo_beneficio = Column(Integer, nullable=False)
-    tipo_beneficio_nome = Column(String(100), nullable=False)
-    incentivo_produtivo_basico = Column(Boolean, nullable=False)
+    tipo_beneficio = Column(Integer, nullable=True)
+    tipo_beneficio_nome = Column(String(100), nullable=True)
+    incentivo_produtivo_basico = Column(Boolean, nullable=True)
 
     # Datas
-    data_inclusao = Column(DateTime, nullable=False)
-    data_atualizacao = Column(DateTime, nullable=False)
+    data_inclusao = Column(DateTime, nullable=True)
+    data_atualizacao = Column(DateTime, nullable=True)
 
-    tem_resultado = Column(Boolean, nullable=False)
+    tem_resultado = Column(Boolean, nullable=True)
 
     # Margem de preferência
-    aplicabilidade_margem_preferencia_normal = Column(Boolean, nullable=False)
-    aplicabilidade_margem_preferencia_adicional = Column(Boolean, nullable=False)
-    percentual_margem_preferencia_normal = Column(DECIMAL(5, 2))
-    percentual_margem_preferencia_adicional = Column(DECIMAL(5, 2))
+    aplicabilidade_margem_preferencia_normal = Column(Boolean, nullable=True)
+    aplicabilidade_margem_preferencia_adicional = Column(Boolean, nullable=True)
+    percentual_margem_preferencia_normal = Column(DECIMAL(5, 2), nullable=True)
+    percentual_margem_preferencia_adicional = Column(DECIMAL(5, 2), nullable=True)
 
     # Catálogo/NCM
-    ncm_nbs_codigo = Column(String(20))
-    ncm_nbs_descricao = Column(String(500))
-    catalogo = Column(String(100))
-    categoria_item_catalogo = Column(String(100))
-    catalogo_codigo_item = Column(String(100))
+    ncm_nbs_codigo = Column(String(20), nullable=True)
+    ncm_nbs_descricao = Column(String(500), nullable=True)
+    catalogo = Column(String(100), nullable=True)
+    categoria_item_catalogo = Column(String(100), nullable=True)
+    catalogo_codigo_item = Column(String(100), nullable=True)
 
     # Complementos
-    informacao_complementar = Column(Text)
-    tipo_margem_preferencia = Column(String(100))
-    exigencia_conteudo_nacional = Column(Boolean, nullable=False)
+    informacao_complementar = Column(Text, nullable=True)
+    tipo_margem_preferencia = Column(String(100), nullable=True)
+    exigencia_conteudo_nacional = Column(Boolean, nullable=True)
 
     # Outros
-    patrimonio = Column(String(100))
-    codigo_registro_imobiliario = Column(String(100))
-    imagem = Column(Integer)
+    patrimonio = Column(String(100), nullable=True)
+    codigo_registro_imobiliario = Column(String(100), nullable=True)
+    imagem = Column(Integer, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=func.now())
@@ -303,13 +312,13 @@ class ItemContratacao(Base):
 
     # Indexes
     __table_args__ = (
-        Index("idx_itens_contratacao_id", "contratacao_id"),
+        Index("idx_itens_contratacao_id", "numero_controle_pncp"),
         Index("idx_itens_numero_item", "numero_item"),
         Index("idx_itens_categoria", "item_categoria_id"),
     )
 
     def __repr__(self):
-        return f"<ItemContratacao(contratacao_id={self.contratacao_id}, numero_item={self.numero_item})>"
+        return f"<ItemContratacao(numero_controle_pncp='{self.numero_controle_pncp}', numero_item={self.numero_item})>"
 
 
 class ContratacaoFonteOrcamentaria(Base):
@@ -317,10 +326,12 @@ class ContratacaoFonteOrcamentaria(Base):
 
     __tablename__ = "contratacoes_fontes_orcamentarias"
 
-    contratacao_id = Column(Integer, ForeignKey("contratacoes.id"), primary_key=True)
+    numero_controle_pncp = Column(
+        String(100), ForeignKey("contratacoes.numero_controle_pncp"), primary_key=True
+    )
     fonte_orcamentaria_id = Column(
         Integer, ForeignKey("fontes_orcamentarias.id"), primary_key=True
     )
 
     def __repr__(self):
-        return f"<ContratacaoFonteOrcamentaria(contratacao_id={self.contratacao_id}, fonte_id={self.fonte_orcamentaria_id})>"
+        return f"<ContratacaoFonteOrcamentaria(numero_controle_pncp='{self.numero_controle_pncp}', fonte_id={self.fonte_orcamentaria_id})>"

@@ -9,7 +9,8 @@ import os
 # Add the ingestor directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ingestor"))
 
-from utils import parse_numero_controle, iso_to_ymd, validate_iso_date
+# Import from the utils.py file, not the utils package
+import ingestor.utils.ingestor_utils as utils
 
 
 def test_parse_numero_controle():
@@ -22,7 +23,7 @@ def test_parse_numero_controle():
     print("Testing parse_numero_controle...")
     for input_str, expected in test_cases:
         try:
-            result = parse_numero_controle(input_str)
+            result = utils.parse_numero_controle(input_str)
             if result == expected:
                 print(f"✓ {input_str} → {result}")
             else:
@@ -41,7 +42,7 @@ def test_iso_to_ymd():
     print("\nTesting iso_to_ymd...")
     for input_str, expected in test_cases:
         try:
-            result = iso_to_ymd(input_str)
+            result = utils.iso_to_ymd(input_str)
             if result == expected:
                 print(f"✓ {input_str} → {result}")
             else:
@@ -61,7 +62,7 @@ def test_validate_iso_date():
 
     print("\nTesting validate_iso_date...")
     for input_str, expected in test_cases:
-        result = validate_iso_date(input_str)
+        result = utils.validate_iso_date(input_str)
         if result == expected:
             print(f"✓ {input_str} → {result}")
         else:

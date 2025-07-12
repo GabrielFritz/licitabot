@@ -19,9 +19,11 @@ from datetime import datetime, timedelta
 
 from aio_pika import IncomingMessage, connect_robust
 
-from config import settings
-from services.ingestion import ingest_window
-from utils import format_iso_local
+from ingestor.config import settings
+from ingestor.services.ingestion import ingest_window
+from ingestor.utils.ingestor_utils import format_iso_local
+from ingestor.database.connection import get_sync_engine
+from ingestor.database.models import Base
 
 
 async def handle(message: IncomingMessage) -> None:
@@ -59,6 +61,16 @@ async def handle(message: IncomingMessage) -> None:
 
 
 async def main() -> None:
+    # Initialize database tables
+    print("[*] Initializing database tables...")
+    try:
+        engine = get_sync_engine()
+        Base.metadata.create_all(engine)
+        print("[*] Database tables created successfully")
+    except Exception as e:
+        print(f"[!] Warning: Could not create database tables: {e}")
+        print("[*] Continuing anyway...")
+
     connection = await connect_robust(settings.RABBITMQ_URL)
     channel = await connection.channel()
     await channel.set_qos(prefetch_count=1)

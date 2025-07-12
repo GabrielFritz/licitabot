@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.pool import StaticPool
 
-from ..config import settings
+from ingestor.config import settings
 
 
 class DatabaseConfig:
@@ -38,7 +38,7 @@ class DatabaseConfig:
                 self.database_url,
                 pool_pre_ping=True,
                 pool_recycle=settings.DB_POOL_RECYCLE,
-                echo=settings.DEBUG,
+                echo=settings.SQL_LOGGING,
                 poolclass=StaticPool if settings.TESTING else None,
             )
         return self._sync_engine
@@ -50,7 +50,7 @@ class DatabaseConfig:
                 self.async_database_url,
                 pool_pre_ping=True,
                 pool_recycle=settings.DB_POOL_RECYCLE,
-                echo=settings.DEBUG,
+                echo=settings.SQL_LOGGING,
                 poolclass=StaticPool if settings.TESTING else None,
             )
         return self._async_engine

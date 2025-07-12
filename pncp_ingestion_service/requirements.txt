@@ -20,5 +20,9 @@ psycopg2-binary==2.9.9
 # Retry logic for API rate limiting
 tenacity==8.2.3
 
+# Data normalization and processing
+python-dateutil==2.8.2
+unidecode==1.3.7
+
 # Additional utilities
 python-dotenv==1.0.0 

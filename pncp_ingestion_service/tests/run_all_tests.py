@@ -51,6 +51,10 @@ async def run_async_test(test_file: str) -> bool:
     print("=" * 50)
 
     try:
+        # Add the project root to Python path for proper imports
+        project_root = os.path.dirname(os.path.dirname(test_file))
+        sys.path.insert(0, project_root)
+
         # Import and run the async test
         spec = importlib.util.spec_from_file_location("test_module", test_file)
         module = importlib.util.module_from_spec(spec)
@@ -98,7 +102,7 @@ def main():
             # These are async tests that require RabbitMQ
             success = asyncio.run(run_async_test(test_file))
         else:
-            # These are sync tests (including database tests)
+            # These are sync tests (including database tests and persistence tests)
             success = run_python_test(test_file)
 
         results.append((test_file, success))

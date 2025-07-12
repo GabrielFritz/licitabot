@@ -2,7 +2,7 @@
 """
 Test runner for PNCP Ingestion Service.
 Runs all tests in the tests folder.
-Expects RabbitMQ to be running via docker-compose.
+Expects PostgreSQL and RabbitMQ to be running via docker-compose.
 """
 
 import os
@@ -73,7 +73,8 @@ def main():
     """Run all tests."""
     print("🧪 PNCP Ingestion Service - Test Suite")
     print("=" * 50)
-    print("💡 Make sure RabbitMQ is running: docker-compose up -d rabbitmq")
+    print("💡 Make sure PostgreSQL and RabbitMQ are running:")
+    print("   docker-compose up -d postgres rabbitmq")
     print()
 
     # Get the tests directory
@@ -97,7 +98,7 @@ def main():
             # These are async tests that require RabbitMQ
             success = asyncio.run(run_async_test(test_file))
         else:
-            # These are sync tests
+            # These are sync tests (including database tests)
             success = run_python_test(test_file)
 
         results.append((test_file, success))

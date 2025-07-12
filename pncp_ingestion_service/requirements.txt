@@ -9,10 +9,11 @@ httpx==0.25.2
 # Data validation and serialization
 pydantic==2.5.0
 
-# Database ORM (for future persistence tasks)
+# Database ORM and migrations
 SQLAlchemy==2.0.23
+alembic==1.13.1
 
-# PostgreSQL drivers (for future persistence tasks)
+# PostgreSQL drivers
 asyncpg==0.29.0
 psycopg2-binary==2.9.9
 

@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 
 from aio_pika import IncomingMessage, connect_robust
 
-from config import QUEUE_NAME, RABBITMQ_URL, ROLLING_WINDOW_MINUTES
+from config import settings
 from services.ingestion import ingest_window
 from utils import format_iso_local
 
@@ -40,7 +40,7 @@ async def handle(message: IncomingMessage) -> None:
             data_fim = payload["data_fim"]
         else:  # mode == "update"
             dt_fim = datetime.now().replace(microsecond=0)
-            dt_ini = dt_fim - timedelta(minutes=ROLLING_WINDOW_MINUTES)
+            dt_ini = dt_fim - timedelta(minutes=settings.ROLLING_WINDOW_MINUTES)
             data_ini = format_iso_local(dt_ini)
             data_fim = format_iso_local(dt_fim)
 
@@ -59,14 +59,14 @@ async def handle(message: IncomingMessage) -> None:
 
 
 async def main() -> None:
-    connection = await connect_robust(RABBITMQ_URL)
+    connection = await connect_robust(settings.RABBITMQ_URL)
     channel = await connection.channel()
     await channel.set_qos(prefetch_count=1)
 
-    queue = await channel.declare_queue(QUEUE_NAME, durable=True)
+    queue = await channel.declare_queue(settings.QUEUE_NAME, durable=True)
     await queue.consume(handle)
 
-    print(f"[*] Listening on {QUEUE_NAME} …  Ctrl-C para sair")
+    print(f"[*] Listening on {settings.QUEUE_NAME} …  Ctrl-C para sair")
     await asyncio.Future()  # mantém o loop vivo
 
 

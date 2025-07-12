@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# PNCP Ingestion Service - Local Development Startup Script
+# PNCP Ingestion Service - Test Runner Script
 
 set -e
 
-echo "🚀 Starting PNCP Ingestion Service (Local Development)"
+echo "🧪 Running PNCP Ingestion Service Tests"
 
 # Colors for output
 RED='\033[0;31m'
@@ -42,26 +42,18 @@ if ! command -v docker-compose &> /dev/null; then
     exit 1
 fi
 
-# Create logs directory if it doesn't exist
-mkdir -p logs
+print_status "Starting required services (PostgreSQL and RabbitMQ)..."
+docker-compose up -d postgres rabbitmq
 
-print_status "Starting PostgreSQL..."
-docker-compose up -d postgres
+print_status "Waiting for services to be ready..."
+sleep 20
 
-print_status "Waiting for PostgreSQL to be ready..."
-sleep 15
+print_status "Running all tests in container..."
+docker-compose run --rm pncp-tests
 
-print_status "Starting RabbitMQ..."
-docker-compose up -d rabbitmq
-
-print_status "Waiting for RabbitMQ to be ready..."
-sleep 10
-
-print_success "All services are ready!"
-echo ""
-print_status "Starting PNCP Ingestion Service..."
-print_status "Press Ctrl+C to stop all services"
-echo ""
-
-# Start the ingestion service
-docker-compose up pncp-ingestor 
+if [ $? -eq 0 ]; then
+    print_success "All tests passed!"
+else
+    print_error "Some tests failed!"
+    exit 1
+fi 

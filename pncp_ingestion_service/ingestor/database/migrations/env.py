@@ -14,9 +14,10 @@ from alembic import context
 # Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-# Import the models
+# Import the models and settings
 from ingestor.database.models import Base
 from ingestor.database.connection import db_config
+from ingestor.config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -38,15 +39,8 @@ target_metadata = Base.metadata
 
 
 def get_url():
-    """Get database URL from environment or config."""
-    # Try to get from environment first
-    user = os.getenv("POSTGRES_USER", "pncp_user")
-    password = os.getenv("POSTGRES_PASSWORD", "pncp_pass")
-    host = os.getenv("POSTGRES_HOST", "localhost")
-    port = os.getenv("POSTGRES_PORT", "5432")
-    database = os.getenv("POSTGRES_DB", "pncp_ingestion")
-
-    return f"postgresql://{user}:{password}@{host}:{port}/{database}"
+    """Get database URL from centralized settings."""
+    return settings.database_url
 
 
 def run_migrations_offline() -> None:

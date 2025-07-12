@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ingestor"))
 
 from aio_pika import connect_robust, Message
-from config import QUEUE_NAME, RABBITMQ_URL
+from config import settings
 
 
 async def test_rabbitmq_connection():
@@ -23,14 +23,14 @@ async def test_rabbitmq_connection():
 
     try:
         # Connect to RabbitMQ
-        connection = await connect_robust(RABBITMQ_URL)
+        connection = await connect_robust(settings.RABBITMQ_URL)
         channel = await connection.channel()
 
         # Declare queue
-        queue = await channel.declare_queue(QUEUE_NAME, durable=True)
+        queue = await channel.declare_queue(settings.QUEUE_NAME, durable=True)
 
-        print(f"✅ Connected to RabbitMQ at {RABBITMQ_URL}")
-        print(f"✅ Queue '{QUEUE_NAME}' is ready")
+        print(f"✅ Connected to RabbitMQ at {settings.RABBITMQ_URL}")
+        print(f"✅ Queue '{settings.QUEUE_NAME}' is ready")
 
         # Send test messages
         test_messages = [
@@ -55,7 +55,9 @@ async def test_rabbitmq_connection():
                 body=json.dumps(payload).encode(), delivery_mode=2  # Persistent message
             )
 
-            await channel.default_exchange.publish(message, routing_key=QUEUE_NAME)
+            await channel.default_exchange.publish(
+                message, routing_key=settings.QUEUE_NAME
+            )
             print(f"✅ Message {i}: {json.dumps(payload)}")
 
         await connection.close()

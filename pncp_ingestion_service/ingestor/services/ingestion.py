@@ -23,17 +23,11 @@ from tenacity import (
     retry_if_exception_type,
 )
 
-from config import (
-    BASE_CONSULTA_URL,
-    BASE_ITENS_URL,
-    HTTP_TIMEOUT,
-    MODALIDADE_CONTRATACAO,
-    PAGE_SIZE,
-)
+from config import settings
 from models.pncp import Contratacao, ItemContratacao
 from utils import iso_to_ymd, parse_numero_controle
 
-TIMEOUT = Timeout(HTTP_TIMEOUT)
+TIMEOUT = Timeout(settings.HTTP_TIMEOUT)
 
 
 # ───────────────────────────────────────── helpers
@@ -56,14 +50,14 @@ async def _total_paginas(client: AsyncClient, di: str, df: str) -> int:
     params = dict(
         dataInicial=di,
         dataFinal=df,
-        codigoModalidadeContratacao=MODALIDADE_CONTRATACAO,
+        codigoModalidadeContratacao=settings.MODALIDADE_CONTRATACAO,
         pagina=1,
-        tamanhoPagina=PAGE_SIZE,  # Usar o mesmo PAGE_SIZE para consistência
+        tamanhoPagina=settings.PAGE_SIZE,  # Usar o mesmo PAGE_SIZE para consistência
     )
 
     print(f"[DEBUG] Getting total pages with params: {params}")
 
-    r = await _make_request_with_retry(client, BASE_CONSULTA_URL, params)
+    r = await _make_request_with_retry(client, settings.BASE_CONSULTA_URL, params)
 
     result = r.json()
     total_paginas = result["totalPaginas"]
@@ -78,20 +72,20 @@ async def _fetch_pagina(
     params = dict(
         dataInicial=di,
         dataFinal=df,
-        codigoModalidadeContratacao=MODALIDADE_CONTRATACAO,
+        codigoModalidadeContratacao=settings.MODALIDADE_CONTRATACAO,
         pagina=pag,
-        tamanhoPagina=PAGE_SIZE,
+        tamanhoPagina=settings.PAGE_SIZE,
     )
 
     print(f"[DEBUG] Fetching page {pag} with params: {params}")
 
-    r = await _make_request_with_retry(client, BASE_CONSULTA_URL, params)
+    r = await _make_request_with_retry(client, settings.BASE_CONSULTA_URL, params)
     return [Contratacao(**d) for d in r.json()["data"]]
 
 
 async def _fetch_itens(client: AsyncClient, num_ctrl: str) -> List[ItemContratacao]:
     cnpj, ano, seq = parse_numero_controle(num_ctrl)
-    url = BASE_ITENS_URL.format(cnpj=cnpj, ano=ano, seq=seq)
+    url = settings.BASE_ITENS_URL.format(cnpj=cnpj, ano=ano, seq=seq)
 
     try:
         r = await _make_request_with_retry(client, url)

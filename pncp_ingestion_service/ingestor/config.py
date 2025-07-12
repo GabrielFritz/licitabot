@@ -48,11 +48,19 @@ class Settings:
     # HTTP timeout (seconds)
     HTTP_TIMEOUT: Final[float] = float(os.getenv("HTTP_TIMEOUT", "20.0"))
 
+    # ───────────────────────────────────────── Persistence Configuration
+    PERSISTENCE_BATCH_SIZE: Final[int] = int(os.getenv("PERSISTENCE_BATCH_SIZE", "100"))
+    PERSISTENCE_TIMEOUT: Final[float] = float(os.getenv("PERSISTENCE_TIMEOUT", "30.0"))
+    PERSISTENCE_RETRY_ATTEMPTS: Final[int] = int(
+        os.getenv("PERSISTENCE_RETRY_ATTEMPTS", "3")
+    )
+
     # ───────────────────────────────────────── Logging Configuration
     LOG_LEVEL: Final[str] = os.getenv("LOG_LEVEL", "INFO")
     LOG_FORMAT: Final[str] = os.getenv(
         "LOG_FORMAT", "[%(asctime)s] %(levelname)s: %(message)s"
     )
+    SQL_LOGGING: Final[bool] = os.getenv("SQL_LOGGING", "false").lower() == "true"
 
     # ───────────────────────────────────────── Development Configuration
     DEBUG: Final[bool] = os.getenv("DEBUG", "false").lower() == "true"
@@ -91,7 +99,11 @@ MODALIDADE_CONTRATACAO = settings.MODALIDADE_CONTRATACAO
 PAGE_SIZE = settings.PAGE_SIZE
 ROLLING_WINDOW_MINUTES = settings.ROLLING_WINDOW_MINUTES
 HTTP_TIMEOUT = settings.HTTP_TIMEOUT
+PERSISTENCE_BATCH_SIZE = settings.PERSISTENCE_BATCH_SIZE
+PERSISTENCE_TIMEOUT = settings.PERSISTENCE_TIMEOUT
+PERSISTENCE_RETRY_ATTEMPTS = settings.PERSISTENCE_RETRY_ATTEMPTS
 LOG_LEVEL = settings.LOG_LEVEL
 LOG_FORMAT = settings.LOG_FORMAT
+SQL_LOGGING = settings.SQL_LOGGING
 DEBUG = settings.DEBUG
 TESTING = settings.TESTING

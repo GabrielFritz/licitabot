@@ -23,9 +23,13 @@ from tenacity import (
     retry_if_exception_type,
 )
 
-from config import settings
-from models.pncp import Contratacao, ItemContratacao
-from utils import iso_to_ymd, parse_numero_controle
+from ingestor.config import settings
+from ingestor.models.pncp import Contratacao, ItemContratacao
+from ingestor.utils.ingestor_utils import iso_to_ymd, parse_numero_controle
+from ingestor.services.persistence import (
+    persist_contratacao_with_items,
+    format_persistence_log,
+)
 
 TIMEOUT = Timeout(settings.HTTP_TIMEOUT)
 
@@ -132,5 +136,10 @@ async def ingest_window(data_ini: str, data_fim: str) -> None:
 
                 itens = await _fetch_itens(client, c.numero_controle_pncp)
 
-                # TODO: persistir ou repassar
-                print(f"[✓] {c.numero_controle_pncp} {dt_c} — " f"{len(itens)} itens")
+                # Persistir dados no banco
+                try:
+                    result = await persist_contratacao_with_items(c, itens)
+                    log_message = format_persistence_log(result, c.numero_controle_pncp)
+                    print(log_message)
+                except Exception as e:
+                    print(f"[❌] Erro ao persistir {c.numero_controle_pncp}: {e}")

@@ -1,6 +1,25 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: pncp-postgres
+    environment:
+      POSTGRES_DB: pncp_ingestion
+      POSTGRES_USER: pncp_user
+      POSTGRES_PASSWORD: pncp_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pncp_user -d pncp_ingestion"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # RabbitMQ for message queue
   rabbitmq:
     image: rabbitmq:3.12-management
@@ -26,6 +45,8 @@ services:
       dockerfile: Dockerfile
     container_name: pncp-ingestor
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     environment:
@@ -48,6 +69,8 @@ services:
       dockerfile: Dockerfile
     container_name: pncp-tests
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     environment:
@@ -57,6 +80,7 @@ services:
     volumes:
       - ./tests:/app/tests
       - ./ingestor:/app/ingestor
+      - ./scripts:/app/scripts
     command: ["python", "tests/run_all_tests.py"]
     profiles:
       - test
@@ -74,6 +98,8 @@ services:
       - cache
 
 volumes:
+  postgres_data:
+    driver: local
   rabbitmq_data:
     driver: local
   redis_data:

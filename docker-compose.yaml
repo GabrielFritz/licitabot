@@ -1,0 +1,154 @@
+version: '3.8'
+
+services:
+
+  # PNCP Ingestion Service
+  pncp-ingestion-service-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: pncp_ingestion_consumer
+    container_name: pncp-ingestor
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - TZ=America/Sao_Paulo
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env.local
+    volumes:
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - main
+      - pncp-ingestion
+  
+  pncp-ingestion-service-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: pncp_ingestion_api
+    container_name: pncp-ingestion-api
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - main
+      - pncp-ingestion
+    depends_on:
+      pncp-ingestion-service-consumer:
+        condition: service_healthy
+    env_file:
+      - .env.local
+
+  # Embeddings API Service
+  embeddings-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: embeddings_api
+    container_name: embeddings-api
+    environment:
+      - TZ=America/Sao_Paulo
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env.local
+    ports:
+      - "8002:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - main
+      - embeddings
+
+  # PostgreSQL Database with pgvector extension
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: pncp-postgres
+    environment:
+      POSTGRES_DB: pncp_ingestion
+      POSTGRES_USER: pncp_user
+      POSTGRES_PASSWORD: pncp_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    profiles:
+      - main
+      - pncp-ingestion
+      - embeddings
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pncp_user -d pncp_ingestion"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pncp-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pncp.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - main
+      - pncp-ingestion
+
+  # RabbitMQ for message queue
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: pncp-rabbitmq
+    ports:
+      - "5672:5672"      # AMQP protocol
+      - "15672:15672"    # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    profiles:
+      - main
+      - pncp-ingestion
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: pncp-network 

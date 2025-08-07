@@ -1,8 +1,10 @@
 import logging
 
 from fastapi import APIRouter, HTTPException, status
-from licitabot.application.interfaces.embeddings_client import EmbeddingsClientInterface
-from licitabot.infrastructure.embeddings_client import OpenAIEmbeddingsClient
+from licitabot.application.interfaces.embeddings import (
+    EmbeddingApiClientInterface,
+)
+from licitabot.infrastructure.embeddings import OpenAIEmbeddingsClient
 from licitabot.presentation.embeddings_api.routers.embeddings.schemas import (
     GenerateEmbeddingRequest,
     GenerateEmbeddingResponse,
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_embeddings_client() -> EmbeddingsClientInterface:
+def get_embeddings_client() -> EmbeddingApiClientInterface:
     """Get embeddings client instance."""
     return OpenAIEmbeddingsClient()
 

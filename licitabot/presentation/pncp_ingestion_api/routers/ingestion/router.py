@@ -40,7 +40,7 @@ async def trigger(request: PNCPIngestionRequest) -> PNCPIngestionResponse:
                     data_ini=request.data_ini,
                     data_fim=request.data_fim,
                 ),
-                "pncp_ingestion_service.pncp_ingestion_triggered",
+                "pncp_ingestion_triggered",
             )
         return PNCPIngestionResponse(request_id=request_id)
 

@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from licitabot.application.interfaces.repositories import (
-    RepositoryInterface,
+    RepositoryInterfaceWithGlobalUpdate,
 )
 from licitabot.domain.entities import (
     AmparoLegal,
@@ -32,8 +32,13 @@ from typing import Any
 
 from sqlalchemy import func
 
+from datetime import datetime
+import logging
 
-class ContratacaoRepository(RepositoryInterface[Contratacao]):
+logger = logging.getLogger("licitabot")
+
+
+class ContratacaoRepository(RepositoryInterfaceWithGlobalUpdate[Contratacao]):
 
     def __init__(
         self,
@@ -48,6 +53,12 @@ class ContratacaoRepository(RepositoryInterface[Contratacao]):
         self.fonte_orcamentaria_repository = fonte_orcamentaria_repository
         self.orgao_entidade_repository = orgao_entidade_repository
         self.unidade_orgao_repository = unidade_orgao_repository
+
+    async def get_by_global_update_between(
+        self, data_ini: datetime, data_fim: datetime
+    ) -> List[Contratacao]:
+        db_results = await self._get_by_global_update_between(data_ini, data_fim)
+        return [Contratacao.model_validate(item) for item in db_results]
 
     async def get_by_id(self, entity_id: Any) -> Optional[Contratacao]:
         db_result = await self._get_by_id(entity_id)
@@ -114,6 +125,26 @@ class ContratacaoRepository(RepositoryInterface[Contratacao]):
         query = select(func.count(ContratacaoSchema.numero_controle_pncp))
         result = await self.session.execute(query)
         return result.scalar()
+
+    async def _get_by_global_update_between(
+        self, data_ini: datetime, data_fim: datetime
+    ) -> List[ContratacaoSchema]:
+        query = (
+            select(ContratacaoSchema)
+            .options(
+                selectinload(ContratacaoSchema.orgao_entidade),
+                selectinload(ContratacaoSchema.unidade_orgao),
+                selectinload(ContratacaoSchema.unidade_sub_rogada),
+                selectinload(ContratacaoSchema.orgao_sub_rogado),
+                selectinload(ContratacaoSchema.amparo_legal),
+                selectinload(ContratacaoSchema.fontes_orcamentarias),
+            )
+            .where(
+                ContratacaoSchema.data_atualizacao_global.between(data_ini, data_fim)
+            )
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()
 
     async def _get_by_id(self, entity_id: Any) -> Optional[ContratacaoSchema]:
         query = (

@@ -1,14 +1,20 @@
-import asyncio
 from typing import List
 
-import openai
 from openai import AsyncOpenAI
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
-from licitabot.application.interfaces.embeddings_client import EmbeddingsClientInterface
+from licitabot.application.interfaces.embeddings import (
+    EmbeddingApiClientInterface,
+)
 from licitabot.config import settings
 
 
-class OpenAIEmbeddingsClient(EmbeddingsClientInterface):
+class OpenAIEmbeddingsClient(EmbeddingApiClientInterface):
     """OpenAI-based embeddings client implementation."""
 
     def __init__(self, api_key: str = None, model: str = "text-embedding-3-small"):
@@ -17,6 +23,12 @@ class OpenAIEmbeddingsClient(EmbeddingsClientInterface):
         self.client = AsyncOpenAI(api_key=self.api_key)
         self._embedding_dimensions = 1536  # OpenAI text-embedding-ada-002 dimensions
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True,
+    )
     async def generate_embedding(self, text: str) -> List[float]:
         """Generate embedding vector for a given text."""
         try:
@@ -25,6 +37,12 @@ class OpenAIEmbeddingsClient(EmbeddingsClientInterface):
         except Exception as e:
             raise Exception(f"Failed to generate embedding: {str(e)}")
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True,
+    )
     async def generate_embeddings_batch(self, texts: List[str]) -> List[List[float]]:
         """Generate embedding vectors for a batch of texts."""
         try:

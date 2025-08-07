@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, List, Optional, TypeVar
+from datetime import datetime
 
 T = TypeVar("T")
 
@@ -23,4 +24,12 @@ class RepositoryInterface(Generic[T], ABC):
 
     @abstractmethod
     async def count_all(self) -> int:
+        raise NotImplementedError
+
+
+class RepositoryInterfaceWithGlobalUpdate(RepositoryInterface[T], ABC):
+    @abstractmethod
+    async def get_by_global_update_between(
+        self, data_ini: datetime, data_fim: datetime
+    ) -> List[T]:
         raise NotImplementedError

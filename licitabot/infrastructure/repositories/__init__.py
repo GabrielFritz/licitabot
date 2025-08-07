@@ -8,6 +8,12 @@ from licitabot.infrastructure.repositories.item_contratacao import (
 )
 from licitabot.infrastructure.repositories.orgao_entidade import OrgaoEntidadeRepository
 from licitabot.infrastructure.repositories.unidade_orgao import UnidadeOrgaoRepository
+from licitabot.infrastructure.repositories.contratacao_embedding import (
+    ContratacaoEmbeddingRepository,
+)
+from licitabot.infrastructure.repositories.item_contratacao_embedding import (
+    ItemContratacaoEmbeddingRepository,
+)
 
 __all__ = [
     "ContratacaoRepository",
@@ -16,4 +22,6 @@ __all__ = [
     "AmparoLegalRepository",
     "FonteOrcamentariaRepository",
     "ItemContratacaoRepository",
+    "ContratacaoEmbeddingRepository",
+    "ItemContratacaoEmbeddingRepository",
 ]

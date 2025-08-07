@@ -8,7 +8,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: pncp_ingestion_consumer
-    container_name: pncp-ingestor
+    container_name: pncp-ingestion-service-consumer
     depends_on:
       postgres:
         condition: service_healthy
@@ -20,7 +20,7 @@ services:
     env_file:
       - .env.local
     volumes:
-      - ./logs:/app/logs
+      - ./licitabot:/app/licitabot
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -38,7 +38,9 @@ services:
       context: .
       dockerfile: Dockerfile
       target: pncp_ingestion_api
-    container_name: pncp-ingestion-api
+    container_name: pncp-ingestion-service-api
+    volumes:
+      - ./licitabot:/app/licitabot
     ports:
       - "8001:8000"
     restart: unless-stopped
@@ -57,17 +59,19 @@ services:
       - .env.local
 
   # Embeddings API Service
-  embeddings-api:
+  embeddings-service-api:
     build:
       context: .
       dockerfile: Dockerfile
       target: embeddings_api
-    container_name: embeddings-api
+    container_name: embeddings-service-api
     environment:
       - TZ=America/Sao_Paulo
       - PYTHONUNBUFFERED=1
     env_file:
       - .env.local
+    volumes:
+      - ./licitabot:/app/licitabot
     ports:
       - "8002:8000"
     restart: unless-stopped
@@ -79,6 +83,29 @@ services:
     profiles:
       - main
       - embeddings
+
+
+  search-service-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: search_api
+    container_name: search-service-api
+    env_file:
+      - .env.local
+    volumes:
+      - ./licitabot:/app/licitabot
+    ports:
+      - "8003:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - main
+      - search
 
   # PostgreSQL Database with pgvector extension
   postgres:
@@ -113,6 +140,8 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
       - "8080:80"
+    volumes:
+      - ./pgadmin-servers.json:/pgadmin4/servers.json
     depends_on:
       postgres:
         condition: service_healthy

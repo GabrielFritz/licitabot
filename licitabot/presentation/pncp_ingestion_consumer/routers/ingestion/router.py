@@ -1,6 +1,9 @@
 from faststream import Logger
 from faststream.rabbit import RabbitRouter
-from licitabot.application.dtos import PNCPIngestionRequestDTO
+from licitabot.application.dtos import (
+    PNCPIngestionRequestDTO,
+    PNCPEmbeddingsGenerationRequestDTO,
+)
 from licitabot.application.factories.ingestion import PNCPIngestionServiceFactory
 from licitabot.common.schemas import PNCPIngestionMode
 from licitabot.presentation.pncp_ingestion_consumer.routers.ingestion.schemas import (
@@ -11,6 +14,7 @@ router = RabbitRouter()
 
 
 @router.subscriber("pncp_ingestion_triggered")
+@router.publisher("pncp_ingestion_completed")
 async def handle_pncp_ingestion_triggered(
     message: PNCPIngestionMessage, logger: Logger
 ):
@@ -36,6 +40,11 @@ async def handle_pncp_ingestion_triggered(
 
         logger.info(
             f"[Ingest from PNCP] window={data_ini} → {data_fim} processed successfully [✓]"
+        )
+
+        return PNCPEmbeddingsGenerationRequestDTO(
+            data_ini=data_ini,
+            data_fim=data_fim,
         )
 
     except Exception as e:

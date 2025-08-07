@@ -1,20 +1,36 @@
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional
+from datetime import datetime
 
 from licitabot.application.interfaces.repositories import (
-    RepositoryInterface,
+    RepositoryInterfaceWithGlobalUpdate,
 )
 from licitabot.domain.entities import ItemContratacao
 from licitabot.infrastructure.repositories.database_schemas import (
     ItemContratacao as ItemContratacaoSchema,
+    Contratacao as ContratacaoSchema,
 )
 from sqlalchemy import func, select, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
-class ItemContratacaoRepository(RepositoryInterface[ItemContratacao]):
+class ItemContratacaoRepository(RepositoryInterfaceWithGlobalUpdate[ItemContratacao]):
 
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    async def get_by_global_update_between(
+        self, data_ini: datetime, data_fim: datetime
+    ) -> List[ItemContratacao]:
+        query = (
+            select(ItemContratacaoSchema)
+            .join(ContratacaoSchema, ItemContratacaoSchema.contratacao)
+            .where(
+                ContratacaoSchema.data_atualizacao_global.between(data_ini, data_fim)
+            )
+        )
+        result = await self.session.execute(query)
+        return [ItemContratacao.model_validate(item) for item in result.scalars().all()]
 
     async def get_by_id(self, entity_id: Any) -> Optional[ItemContratacao]:
         db_result = await self._get_by_id(entity_id)

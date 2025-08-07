@@ -91,10 +91,9 @@ class PNCPIngestionService:
                 tempo_processamento=time.time() - start_time,
             )
         except Exception as e:
-            raise e
             return PNCPIngestionResponseDTO(
                 success=False,
-                message=f"NCP ingestion from {ingestion_request.data_ini} to {ingestion_request.data_fim} failed",
+                message=f"PNCP ingestion from {ingestion_request.data_ini} to {ingestion_request.data_fim} failed",
                 contratacoes_processadas=0,
                 itens_contratacao_processados=0,
                 erros=[str(e)],

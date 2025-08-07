@@ -3,6 +3,7 @@
 # FastStream for async message processing
 faststream[rabbit]
 faststream[cli]
+watchfiles
 
 # FastAPI for HTTP API
 fastapi

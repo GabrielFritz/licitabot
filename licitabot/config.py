@@ -79,6 +79,11 @@ class Settings:
     # ───────────────────────────────────────── Embeddings Configuration
     OPENAI_API_KEY: Final[str] = os.getenv("OPENAI_API_KEY", "")
 
+    LICITABOT_EMBEDDINGS_CLIENT_URL: Final[str] = os.getenv(
+        "LICITABOT_EMBEDDINGS_CLIENT_URL",
+        "http://embeddings-service-api:8000/embeddings",
+    )
+
 
 # Global settings instance
 settings = Settings()

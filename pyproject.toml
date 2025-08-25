@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "licitabot"
+version = "0.1.0"
+description = "PNCP Ingestion and Search Service"
+requires-python = ">=3.8"
+dependencies = [
+    "faststream[rabbit]",
+    "faststream[cli]",
+    "watchfiles",
+    "fastapi",
+    "uvicorn",
+    "requests",
+    "httpx",
+    "pydantic",
+    "SQLAlchemy",
+    "tortoise-orm[asyncpg]",
+    "uvloop",
+    "aerich",
+    "asyncclick==8.1.8",
+    "asyncpg",
+    "psycopg2-binary",
+    "pgvector",
+    "tenacity",
+    "python-dateutil",
+    "unidecode",
+    "openai",
+    "python-dotenv",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+]
+
+[project.scripts]
+licitabot-embeddings = "licitabot.presentation.embeddings_api.main:app"
+licitabot-ingestion = "licitabot.presentation.pncp_ingestion_api.main:app"
+licitabot-consumer = "licitabot.presentation.pncp_ingestion_consumer.main:app"
+licitabot-search = "licitabot.presentation.search_api.main:app"
+
+[tool.aerich]
+tortoise_orm = "licitabot.db.TORTOISE_ORM"
+location = "./migrations"
+src_folder = "./."

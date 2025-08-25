@@ -1,0 +1,23 @@
+from typing import Generic, List, Optional, Protocol, Type, TypeVar
+from pydantic import BaseModel
+from tortoise.models import Model
+
+T = TypeVar("T", bound=Model)
+D = TypeVar("D", bound=BaseModel)
+EntityId = TypeVar("EntityId")
+
+
+class Repository(Protocol, Generic[T, D]):
+    pydantic_model: Type[D]
+    tortoise_model: Type[T]
+    pk_field: str
+
+    async def get_all(self, mode: str = "pydantic") -> List[D | T]: ...
+    async def get_by_id(
+        self, id: EntityId, mode: str = "pydantic"
+    ) -> Optional[D | T]: ...
+    async def create(self, entity: D) -> None: ...
+    async def update(self, entity: D) -> None: ...
+    async def delete(self, entity: D) -> None: ...
+    async def save(self, entity: D) -> None: ...
+    async def upsert(self, entity: D) -> None: ...

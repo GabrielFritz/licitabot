@@ -1,6 +1,13 @@
 from datetime import datetime
+from typing import TypedDict
 
 from pydantic import BaseModel, validator
+from licitabot.domain.entities.core.contratacao import Contratacao
+
+from licitabot.domain.entities.core.value_objects import (
+    ModalidadeId,
+    YearMonthDay,
+)
 
 
 class PNCPIngestionRequestDTO(BaseModel):
@@ -45,3 +52,17 @@ class PNCPEmbeddingsGenerationResponseDTO(BaseModel):
     embeddings_item_contratacao_gerados: int
     erros: list[str]
     tempo_processamento: float
+
+
+class PNCPUpdatedContratacoesParams(TypedDict):
+    dataInicial: YearMonthDay
+    dataFinal: YearMonthDay
+    codigoModalidadeContratacao: ModalidadeId
+    pagina: int
+    tamanhoPagina: int
+
+
+class PNCPUpdatedContratacoesResult(BaseModel):
+    contratacoes: list[Contratacao]
+    total_paginas: int
+    total_contratacoes: int

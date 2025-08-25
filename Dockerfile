@@ -12,14 +12,18 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    g++ \
     tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+# Upgrade pip to latest version
+RUN pip install --upgrade pip
 
-# Install Python dependencies
-RUN pip install -r requirements.txt
+# Copy project configuration
+COPY pyproject.toml .
+
+# Install the project in editable mode
+RUN pip install -e .
 
 # Set Python path
 ENV PYTHONPATH=/app
@@ -39,3 +43,7 @@ CMD ["uvicorn", "licitabot.presentation.embeddings_api.main:app", "--host", "0.0
 FROM base as search_api
 
 CMD ["uvicorn", "licitabot.presentation.search_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--reload"]
+
+FROM base as test
+
+CMD ["python", "/app/licitabot/test.py"]

@@ -1,5 +1,4 @@
 import asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
 from licitabot.application.dtos import PNCPEmbeddingsGenerationRequestDTO
 from licitabot.application.dtos import PNCPEmbeddingsGenerationResponseDTO
 from licitabot.application.interfaces.repositories import (
@@ -7,7 +6,7 @@ from licitabot.application.interfaces.repositories import (
     RepositoryInterface,
 )
 from licitabot.application.interfaces.embeddings import PNCPEmbeddingInterface
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from licitabot.domain.entities import Contratacao, ItemContratacao
 from licitabot.domain.entities.embedding import (
     ContratacaoEmbedding,
@@ -18,7 +17,7 @@ import logging
 
 logger = logging.getLogger("licitabot")
 
-semaphore = asyncio.Semaphore(1)
+semaphore = asyncio.Semaphore(10)
 
 
 class PNCPEmbeddingsGenerationService:
@@ -123,4 +122,8 @@ class PNCPEmbeddingsGenerationService:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            await self.session.rollback()
+        else:
+            await self.session.commit()
         await self.session.close()

@@ -29,9 +29,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    profiles:
-      - main
-      - pncp-ingestion
   
   pncp-ingestion-service-api:
     build:
@@ -49,9 +46,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    profiles:
-      - main
-      - pncp-ingestion
     depends_on:
       pncp-ingestion-service-consumer:
         condition: service_healthy
@@ -80,9 +74,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    profiles:
-      - main
-      - embeddings
 
 
   search-service-api:
@@ -103,9 +94,36 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    profiles:
-      - main
-      - search
+    
+  init-db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: aerich init-db && aerich upgrade
+    volumes:
+      - ./licitabot:/app/licitabot
+      - ./migrations:/app/migrations
+    env_file:
+      - .env.local
+    environment:
+      - INIT_DB=true
+    
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    volumes:
+      - ./licitabot:/app/licitabot
+    env_file:
+      - .env.local
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # PostgreSQL Database with pgvector extension
   postgres:
@@ -120,10 +138,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d
-    profiles:
-      - main
-      - pncp-ingestion
-      - embeddings
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pncp_user -d pncp_ingestion"]
       interval: 30s
@@ -145,9 +159,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    profiles:
-      - main
-      - pncp-ingestion
 
   # RabbitMQ for message queue
   rabbitmq:
@@ -161,9 +172,6 @@ services:
       RABBITMQ_DEFAULT_PASS: admin123
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    profiles:
-      - main
-      - pncp-ingestion
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s

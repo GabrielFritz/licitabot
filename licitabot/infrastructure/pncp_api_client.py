@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from httpx import AsyncClient, HTTPStatusError, Timeout
+from httpx import AsyncClient, HTTPStatusError, ReadTimeout, Timeout
 from licitabot.application.interfaces.pncp_api_client import (
     PNCPApiClientInterface,
 )
@@ -12,6 +12,10 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential,
 )
+
+import logging
+
+logger = logging.getLogger("licitabot")
 
 TIMEOUT = Timeout(settings.HTTP_TIMEOUT)
 
@@ -48,7 +52,7 @@ class PNCPApiClient(PNCPApiClientInterface):
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10),
-        retry=retry_if_exception_type(HTTPStatusError),
+        retry=retry_if_exception_type((HTTPStatusError, ReadTimeout)),
         reraise=True,
     )
     async def _make_request_with_retry(self, url: str, params: dict = None) -> dict:
@@ -97,6 +101,7 @@ class PNCPApiClient(PNCPApiClientInterface):
             contratacao.numero_controle_pncp
         )
         url = settings.PNCP_API_ITENS_URL.format(cnpj=cnpj, ano=ano, seq=seq)
+        logger.info(f"Getting items: {url}")
         response = await self._make_request_with_retry(url)
         if response:
             return [

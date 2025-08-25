@@ -65,6 +65,8 @@ class Settings:
     DEBUG: Final[bool] = os.getenv("DEBUG", "false").lower() == "true"
     TESTING: Final[bool] = os.getenv("TESTING", "false").lower() == "true"
 
+    INIT_DB: Final[bool] = os.getenv("INIT_DB", "false").lower() == "true"
+
     # ───────────────────────────────────────── Database URL Generation
     @property
     def database_url(self) -> str:

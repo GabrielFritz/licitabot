@@ -1,5 +1,0 @@
-# Contexto e Objetivo do Produto
-
-Pequenas e médias empresas enfrentam desafios para vender ao governo: é trabalhoso encontrar licitações relevantes, ler longos editais e acompanhar prazos. Ferramentas tradicionais (portais de licitações e alertas por email) ajudam a buscar oportunidades, mas geralmente sobrecarregam o usuário com dados brutos, sem priorização ou análises inteligentes. O novo Marco Legal de Licitações (Lei nº 14.133/2021) trouxe o Portal Nacional de Contratações Públicas (PNCP) como repositório central de dados – uma oportunidade para soluções SaaS que agreguem valor a esses dados abertos.
-
-**Objetivo:** Propor um MVP “matador” para um SaaS brasileiro focado em pregões eletrônicos (a modalidade mais comum de compras públicas), usando a API do PNCP como fonte principal de dados. Diferentemente de um portal de licitações tradicional, essa solução buscará entregar **curadoria de oportunidades, insights acionáveis e automação leve** para fornecedores públicos (especialmente PME), ajudando-os a economizar tempo e aumentar suas chances de sucesso em pregões.

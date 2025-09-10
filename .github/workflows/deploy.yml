@@ -1,0 +1,50 @@
+name: Manual Deploy to Droplet
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Sync project to Droplet
+        run: |
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.env' \
+            $GITHUB_WORKSPACE/ ${{ vars.DROPLET_USER }}@${{ vars.DROPLET_IP }}:/root/app
+
+      - name: Recreate .env on Droplet
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ vars.DROPLET_USER }}@${{ vars.DROPLET_IP }} "
+            cd /root/app &&
+            rm -f .env &&
+            cat <<EOF > .env
+            POSTGRES_HOST=${{ vars.POSTGRES_HOST }}
+            POSTGRES_PORT=${{ vars.POSTGRES_PORT }}
+            POSTGRES_DB=${{ vars.POSTGRES_DB }}
+            POSTGRES_USER=${{ vars.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            RABBITMQ_DEFAULT_USER=${{ vars.RABBITMQ_DEFAULT_USER }}
+            RABBITMQ_DEFAULT_PASS=${{ secrets.RABBITMQ_DEFAULT_PASS }}
+            RABBITMQ_URL=${{ secrets.RABBITMQ_URL }}
+            EOF
+          "
+
+      - name: Run docker compose
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ vars.DROPLET_USER }}@${{ vars.DROPLET_IP }} "
+            cd /root/app &&
+            docker compose pull &&
+            docker compose up -d --build
+          "

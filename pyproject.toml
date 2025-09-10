@@ -1,46 +1,54 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "licitabot"
 version = "0.1.0"
-description = "PNCP Ingestion and Search Service"
-requires-python = ">=3.8"
-dependencies = [
-    "faststream[rabbit]",
-    "faststream[cli]",
-    "watchfiles",
-    "fastapi",
-    "uvicorn",
-    "requests",
-    "httpx",
-    "pydantic",
-    "SQLAlchemy",
-    "tortoise-orm[asyncpg]",
-    "uvloop",
-    "aerich",
-    "asyncclick==8.1.8",
-    "asyncpg",
-    "psycopg2-binary",
-    "pgvector",
-    "tenacity",
-    "python-dateutil",
-    "unidecode",
-    "openai",
-    "python-dotenv",
-    "pytest",
-    "pytest-asyncio",
-    "pytest-cov",
+description = "PNCP ingestion and processing service"
+authors = [{name = "Gabriel Fritz Cavalcante"}]
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
 ]
 
-[project.scripts]
-licitabot-embeddings = "licitabot.presentation.embeddings_api.main:app"
-licitabot-ingestion = "licitabot.presentation.pncp_ingestion_api.main:app"
-licitabot-consumer = "licitabot.presentation.pncp_ingestion_consumer.main:app"
-licitabot-search = "licitabot.presentation.search_api.main:app"
+dependencies = [
+    "faststream[rabbit]",
+    "uvicorn",
+    "sqlalchemy[asyncio]",
+    "asyncpg",
+    "psycopg2-binary",
+    "pydantic",
+    "httpx",
+    "tenacity",
+    "python-dotenv",
+    "alembic",
+    "apscheduler",
+]
 
-[tool.aerich]
-tortoise_orm = "licitabot.db.TORTOISE_ORM"
-location = "./migrations"
-src_folder = "./."
+
+[project.scripts]
+raw-contratacao-ingestion-consumer = "licitabot.presentation.raw_contratacao_ingestion.raw_contratacao_ingestion_consumer.main:main"
+raw-contratacao-ingestion-cli = "licitabot.presentation.raw_contratacao_ingestion.raw_contratacao_ingestion_cli.main:main"
+licitabot-scheduler = "licitabot.presentation.scheduler.main:main"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["licitabot*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"

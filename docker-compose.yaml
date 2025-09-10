@@ -2,149 +2,34 @@ version: '3.8'
 
 services:
 
-  # PNCP Ingestion Service
-  pncp-ingestion-service-consumer:
+  raw-contratacao-ingestion-consumer:
     build:
       context: .
       dockerfile: Dockerfile
-      target: pncp_ingestion_consumer
-    container_name: pncp-ingestion-service-consumer
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - TZ=America/Sao_Paulo
-      - PYTHONUNBUFFERED=1
-    env_file:
-      - .env.local
-    volumes:
-      - ./licitabot:/app/licitabot
+      target: raw-contratacao-ingestion-consumer
+    container_name: pncp-raw-contratacao-ingestion-consumer
     ports:
       - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
   
-  pncp-ingestion-service-api:
+  licitabot-scheduler:
     build:
       context: .
       dockerfile: Dockerfile
-      target: pncp_ingestion_api
-    container_name: pncp-ingestion-service-api
-    volumes:
-      - ./licitabot:/app/licitabot
-    ports:
-      - "8001:8000"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      target: licitabot-scheduler
+    container_name: pncp-licitabot-scheduler
+    env_file:
+      - .env
     depends_on:
-      pncp-ingestion-service-consumer:
+      raw-contratacao-ingestion-consumer:
         condition: service_healthy
-    env_file:
-      - .env.local
-
-  # Embeddings API Service
-  embeddings-service-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: embeddings_api
-    container_name: embeddings-service-api
-    environment:
-      - TZ=America/Sao_Paulo
-      - PYTHONUNBUFFERED=1
-    env_file:
-      - .env.local
-    volumes:
-      - ./licitabot:/app/licitabot
-    ports:
-      - "8002:8000"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-
-  search-service-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: search_api
-    container_name: search-service-api
-    env_file:
-      - .env.local
-    volumes:
-      - ./licitabot:/app/licitabot
-    ports:
-      - "8003:8000"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    
-  init-db:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: base
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: aerich init-db && aerich upgrade
-    volumes:
-      - ./licitabot:/app/licitabot
-      - ./migrations:/app/migrations
-    env_file:
-      - .env.local
-    environment:
-      - INIT_DB=true
-    
-  test:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: test
-    volumes:
-      - ./licitabot:/app/licitabot
-    env_file:
-      - .env.local
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  # PostgreSQL Database with pgvector extension
-  postgres:
-    image: pgvector/pgvector:pg15
-    container_name: pncp-postgres
-    environment:
-      POSTGRES_DB: pncp_ingestion
-      POSTGRES_USER: pncp_user
-      POSTGRES_PASSWORD: pncp_pass
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pncp_user -d pncp_ingestion"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # pgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pncp-pgadmin
@@ -156,36 +41,21 @@ services:
       - "8080:80"
     volumes:
       - ./pgadmin-servers.json:/pgadmin4/servers.json
-    depends_on:
-      postgres:
-        condition: service_healthy
+    profiles: ["dev"]
 
-  # RabbitMQ for message queue
   rabbitmq:
-    image: rabbitmq:management
+    image: rabbitmq:3.12-management
     container_name: pncp-rabbitmq
+    env_file:
+      - .env
     ports:
-      - "5672:5672"      # AMQP protocol
-      - "15672:15672"    # Management UI
-    environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin123
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - "15672:15672"
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-volumes:
-  postgres_data:
-    driver: local
-  rabbitmq_data:
-    driver: local
-  redis_data:
-    driver: local
-
 networks:
   default:
-    name: pncp-network 
+    name: pncp-network

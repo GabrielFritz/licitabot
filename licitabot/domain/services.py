@@ -40,5 +40,5 @@ class IngestionWindowService:
 
 time_service = BrazilianTimeService()
 ingestion_window_service = IngestionWindowService(
-    time_service, settings.RAW_CONTRATACAO_INGESTION_DEFAULT_DELTA
+    time_service, settings.ingestion_services.default_delta_days
 )

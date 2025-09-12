@@ -4,7 +4,7 @@ from licitabot.settings import settings, logger
 from faststream.rabbit import RabbitBroker
 from licitabot.domain.services import time_service, ingestion_window_service
 
-broker = RabbitBroker(settings.RABBITMQ_URL, logger=logger)
+broker = RabbitBroker(settings.rabbitmq.amqp_url, logger=logger)
 scheduler = AsyncIOScheduler()
 
 

@@ -16,7 +16,7 @@ from licitabot.settings import settings
 class PNCPApiConsultaAdapter:
 
     def __init__(self):
-        self.client = AsyncClient(timeout=settings.HTTP_TIMEOUT)
+        self.client = AsyncClient(timeout=settings.http.timeout)
         self.PNCP_GET_UPDATED_CONTRATACOES_URL = (
             "https://pncp.gov.br/api/consulta/v1/contratacoes/atualizacao"
         )

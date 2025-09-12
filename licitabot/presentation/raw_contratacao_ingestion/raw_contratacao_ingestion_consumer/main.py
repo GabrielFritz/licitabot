@@ -15,7 +15,7 @@ async def lifespan(context: ContextRepo):
     yield
 
 
-broker = RabbitBroker(settings.RABBITMQ_URL, logger=logger)
+broker = RabbitBroker(settings.rabbitmq.amqp_url, logger=logger)
 app = AsgiFastStream(
     broker,
     logger=logger,

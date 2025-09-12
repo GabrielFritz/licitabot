@@ -29,7 +29,7 @@ def get_default_dates(data_final=None):
     if data_final is None:
         data_final = datetime.now()
     data_inicial = data_final - timedelta(
-        days=settings.RAW_CONTRATACAO_INGESTION_DEFAULT_DELTA
+        days=settings.ingestion_services.default_delta_days
     )
     return data_inicial, data_final
 

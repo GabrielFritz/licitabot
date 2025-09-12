@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from licitabot.settings import settings
 
-engine = create_async_engine(settings.ASYNC_DATABASE_URL)
+engine = create_async_engine(settings.database.async_url)
 async_session_factory = async_sessionmaker(engine, class_=AsyncSession)
 
 

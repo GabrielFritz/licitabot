@@ -1,7 +1,6 @@
-import os
-
-from dotenv import load_dotenv
 import logging
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseModel
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -10,22 +9,57 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger("licitabot")
 
 
-load_dotenv()
+class DatabaseSettings(BaseModel):
+
+    host: str = "localhost"
+    port: int = 5432
+    db: str = "pncp_ingestion"
+    user: str = "pncp_user"
+    password: str = "pncp_pass"
+
+    @property
+    def async_url(self) -> str:
+        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}?ssl=require"
+
+    @property
+    def sync_url(self) -> str:
+        return f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}?sslmode=require"
 
 
-class Settings:
-    HTTP_TIMEOUT = 60.0
-    POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-    POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-    POSTGRES_DB = os.getenv("POSTGRES_DB", "pncp_ingestion")
-    POSTGRES_USER = os.getenv("POSTGRES_USER", "pncp_user")
-    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "pncp_pass")
-    ASYNC_DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}?ssl=require"
-    SYNC_DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}?sslmode=require"
-    RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost/")
-    INGESTION_WINDOW_DEFAULT_DELTA_DAYS = int(
-        os.getenv("INGESTION_WINDOW_DEFAULT_DELTA_DAYS", "1")
+class RabbitMQSettings(BaseModel):
+    user: str = "guest"
+    password: str = "guest"
+    host: str = "localhost"
+    port: int = 5672
+    vhost: str = "/"
+
+    @property
+    def amqp_url(self) -> str:
+        vhost = self.vhost.lstrip("/")
+        return f"amqp://{self.user}:{self.password}@{self.host}:{self.port}/{vhost}"
+
+
+class IngestionServicesSettings(BaseModel):
+    default_delta_days: int = 1
+
+
+class HTTPSettings(BaseModel):
+    timeout: float = 60.0
+
+
+class Settings(BaseSettings):
+
+    model_config = SettingsConfigDict(
+        env_nested_delimiter="__",
+        case_sensitive=False,
+        env_file=".env",
+        env_file_encoding="utf-8",
     )
+
+    database: DatabaseSettings = DatabaseSettings()
+    rabbitmq: RabbitMQSettings = RabbitMQSettings()
+    ingestion_services: IngestionServicesSettings = IngestionServicesSettings()
+    http: HTTPSettings = HTTPSettings()
 
 
 settings = Settings()

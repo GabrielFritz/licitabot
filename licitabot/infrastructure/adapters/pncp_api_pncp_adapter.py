@@ -16,7 +16,7 @@ from licitabot.settings import settings
 class PNCPApiPncpAdapter:
 
     def __init__(self):
-        self.client = AsyncClient(timeout=settings.HTTP_TIMEOUT)
+        self.client = AsyncClient(timeout=settings.http.timeout)
         self.PNCP_GET_CONTRATACAO_ITEMS_URL = "https://pncp.gov.br/api/pncp/v1/orgaos/{cnpj}/compras/{ano}/{sequencial}/itens"
 
     @retry(

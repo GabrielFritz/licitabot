@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+
+  raw-contratacao-ingestion-consumer:
+    env_file:
+      - .env.dev
+  
+  licitabot-scheduler:
+    env_file:
+      - .env.dev
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    env_file:
+      - .env.dev
+    ports:
+      - "8080:80"
+    volumes:
+      - ./pgadmin-servers.json:/pgadmin4/servers.json
+  
+  setup-service:
+    env_file:
+      - .env.dev
+  
+  base-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: base-service
+    env_file:
+      - .env.dev
+    depends_on:
+      raw-contratacao-ingestion-consumer:
+        condition: service_healthy
+    profiles: ["base"]
+
+  rabbitmq:
+    env_file:
+      - .env.dev

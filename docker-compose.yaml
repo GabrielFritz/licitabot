@@ -7,55 +7,68 @@ services:
       context: .
       dockerfile: Dockerfile
       target: raw-contratacao-ingestion-consumer
-    container_name: pncp-raw-contratacao-ingestion-consumer
-    ports:
-      - "8000:8000"
+    container_name: raw-contratacao-ingestion-consumer
     env_file:
       - .env
+    expose: ["8000"]
     depends_on:
       rabbitmq:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   
   licitabot-scheduler:
     build:
       context: .
       dockerfile: Dockerfile
       target: licitabot-scheduler
-    container_name: pncp-licitabot-scheduler
+    container_name: licitabot-scheduler
     env_file:
       - .env
     depends_on:
       raw-contratacao-ingestion-consumer:
         condition: service_healthy
     restart: unless-stopped
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pncp-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@pncp.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-    ports:
-      - "8080:80"
-    volumes:
-      - ./pgadmin-servers.json:/pgadmin4/servers.json
-    profiles: ["dev"]
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'licitabot.presentation.scheduler.main' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   rabbitmq:
     image: rabbitmq:3.12-management
-    container_name: pncp-rabbitmq
+    container_name: rabbitmq
     env_file:
       - .env
     ports:
       - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
       interval: 30s
       timeout: 10s
       retries: 3
+  
+  setup-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: setup-service
+    env_file:
+      - .env
+    command: ["alembic", "upgrade", "head"]
+    profiles: ["setup"]
+    restart: "no"
 
 networks:
   default:
-    name: pncp-network
+    name: licitabot-network
+
+volumes:
+  rabbitmq_data:

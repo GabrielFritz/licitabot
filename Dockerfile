@@ -1,10 +1,12 @@
 FROM python:3.11-slim as base
 
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 RUN pip install --upgrade pip
 
-COPY pyproject.toml .
+COPY . .
 
 RUN pip install -e .
 

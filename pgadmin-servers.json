@@ -1,11 +1,29 @@
 {
     "Servers": {
         "1": {
-            "Name": "Licitabot Database (DO)",
+            "Name": "Licitabot - DEV",
             "Group": "Servers",
             "Host": "licitabot-db-do-user-18630020-0.d.db.ondigitalocean.com",
             "Port": 25060,
-            "MaintenanceDB": "defaultdb",
+            "MaintenanceDB": "licitabot_dev",
+            "Username": "doadmin",
+            "SSLMode": "require",
+            "SSLCert": "",
+            "SSLKey": "",
+            "SSLCompression": 0,
+            "Timeout": 10,
+            "UseSSHTunnel": 0,
+            "TunnelHost": "",
+            "TunnelPort": "22",
+            "TunnelUsername": "",
+            "TunnelAuthentication": 0
+        },
+        "2": {
+            "Name": "Licitabot - PROD",
+            "Group": "Servers",
+            "Host": "licitabot-db-do-user-18630020-0.d.db.ondigitalocean.com",
+            "Port": 25060,
+            "MaintenanceDB": "licitabot_prod",
             "Username": "doadmin",
             "SSLMode": "require",
             "SSLCert": "",

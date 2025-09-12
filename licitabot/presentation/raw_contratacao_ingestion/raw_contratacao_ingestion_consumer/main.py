@@ -1,21 +1,21 @@
 from contextlib import asynccontextmanager
-from faststream.rabbit import RabbitBroker
-from licitabot.settings import settings, logger
-from licitabot.application.bootstrap import ApplicationBootstrap
+from licitabot.settings import logger
 from faststream import ContextRepo
 from faststream.asgi import AsgiFastStream, make_ping_asgi
 from licitabot.presentation.raw_contratacao_ingestion.raw_contratacao_ingestion_consumer.routers.router import (
     router as raw_contratacao_ingestion_router,
 )
+from licitabot.presentation.raw_contratacao_ingestion.raw_contratacao_ingestion_consumer.broker import (
+    get_broker,
+)
 
 
 @asynccontextmanager
 async def lifespan(context: ContextRepo):
-    await ApplicationBootstrap.bootstrap()
     yield
 
 
-broker = RabbitBroker(settings.rabbitmq.amqp_url, logger=logger)
+broker = get_broker()
 app = AsgiFastStream(
     broker,
     logger=logger,

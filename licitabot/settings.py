@@ -19,11 +19,11 @@ class DatabaseSettings(BaseModel):
 
     @property
     def async_url(self) -> str:
-        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}?ssl=require"
+        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}?ssl=prefer"
 
     @property
     def sync_url(self) -> str:
-        return f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}?sslmode=require"
+        return f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}?sslmode=prefer"
 
 
 class RabbitMQSettings(BaseModel):
@@ -52,8 +52,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_nested_delimiter="__",
         case_sensitive=False,
-        env_file=".env",
-        env_file_encoding="utf-8",
     )
 
     database: DatabaseSettings = DatabaseSettings()

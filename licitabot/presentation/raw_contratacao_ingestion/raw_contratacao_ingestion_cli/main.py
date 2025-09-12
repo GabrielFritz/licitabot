@@ -1,12 +1,9 @@
 import argparse
 import asyncio
-from datetime import datetime, timedelta
-from licitabot.infrastructure.database.session import create_session
-from licitabot.domain.value_objects import CodigoModalidadeContratacao
-from licitabot.application.dtos import RawContratacaoIngestionParamsDTO
-from licitabot.application.service_factory import ServiceFactory
-from licitabot.application.bootstrap import ApplicationBootstrap
-from licitabot.settings import logger, settings
+from datetime import datetime
+from licitabot.presentation.raw_contratacao_ingestion.raw_contratacao_ingestion_consumer.publish import (
+    publish_raw_contratacao_ingestion_message,
+)
 
 
 def parse_date(date_str):
@@ -21,21 +18,7 @@ def parse_date(date_str):
             )
 
 
-def format_date(date_obj):
-    return date_obj.strftime("%Y%m%d")
-
-
-def get_default_dates(data_final=None):
-    if data_final is None:
-        data_final = datetime.now()
-    data_inicial = data_final - timedelta(
-        days=settings.ingestion_services.default_delta_days
-    )
-    return data_inicial, data_final
-
-
 async def async_main():
-    await ApplicationBootstrap.bootstrap()
 
     parser = argparse.ArgumentParser(description="Raw Contratacao Ingestion CLI")
     parser.add_argument(
@@ -47,28 +30,10 @@ async def async_main():
 
     args = parser.parse_args()
 
-    data_inicial, data_final = get_default_dates(args.dataFinal)
+    data_inicial = args.dataInicial
+    data_final = args.dataFinal
 
-    if args.dataInicial:
-        data_inicial = args.dataInicial
-
-    logger.info(
-        f"[*] Starting raw contratacao ingestion with dataInicial: {data_inicial} and dataFinal: {data_final}"
-    )
-
-    session = await create_session()
-    async with session:
-        raw_contratacao_ingestion_service = (
-            ServiceFactory.create_raw_contratacao_ingestion_service(
-                session, CodigoModalidadeContratacao.PREGAO_ELETRONICO
-            )
-        )
-        await raw_contratacao_ingestion_service.run(
-            RawContratacaoIngestionParamsDTO(
-                dataInicial=format_date(data_inicial),
-                dataFinal=format_date(data_final),
-            )
-        )
+    await publish_raw_contratacao_ingestion_message(data_inicial, data_final)
 
 
 def main():

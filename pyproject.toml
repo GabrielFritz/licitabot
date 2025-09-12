@@ -23,6 +23,7 @@ dependencies = [
     "asyncpg",
     "psycopg2-binary",
     "pydantic",
+    "pydantic-settings",
     "httpx",
     "tenacity",
     "python-dotenv",

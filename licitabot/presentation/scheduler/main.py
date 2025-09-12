@@ -1,10 +1,10 @@
 import asyncio
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
+from datetime import timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from licitabot.settings import settings, logger
 from faststream.rabbit import RabbitBroker
 from licitabot.domain.value_objects import YearMonthDay
+from licitabot.domain.services import time_service
 
 broker = RabbitBroker(settings.RABBITMQ_URL, logger=logger)
 scheduler = AsyncIOScheduler()
@@ -12,7 +12,7 @@ scheduler = AsyncIOScheduler()
 
 async def publish_raw_contratacao_ingestion_message():
     """Job function (can be scheduled or triggered manually)."""
-    data_final = datetime.now(ZoneInfo("America/Sao_Paulo"))
+    data_final = time_service.get_datetime_now()
     data_inicial = data_final - timedelta(
         days=settings.RAW_CONTRATACAO_INGESTION_DEFAULT_DELTA
     )
@@ -40,7 +40,7 @@ async def start_app():
         trigger="cron",
         hour=1,
         minute=0,
-        timezone=ZoneInfo("America/Sao_Paulo"),
+        timezone=time_service.get_timezone(),
     )
 
     scheduler.start()

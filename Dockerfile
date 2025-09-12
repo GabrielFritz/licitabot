@@ -1,7 +1,5 @@
 FROM python:3.11-slim as base
 
-ENV TZ=America/Sao_Paulo
-
 WORKDIR /app
 
 RUN pip install --upgrade pip

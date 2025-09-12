@@ -23,8 +23,8 @@ class Settings:
     ASYNC_DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}?ssl=require"
     SYNC_DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}?sslmode=require"
     RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost/")
-    RAW_CONTRATACAO_INGESTION_DEFAULT_DELTA = int(
-        os.getenv("RAW_CONTRATACAO_INGESTION_DEFAULT_DELTA", "1")
+    INGESTION_WINDOW_DEFAULT_DELTA_DAYS = int(
+        os.getenv("INGESTION_WINDOW_DEFAULT_DELTA_DAYS", "1")
     )
 
 

@@ -208,3 +208,5 @@ coverage.xml
 
 # Local development
 start_local.sh 
+
+.ssh_creds/

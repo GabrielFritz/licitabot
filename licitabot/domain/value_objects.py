@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 
 class NumeroPagina(int):
@@ -97,3 +98,23 @@ class Sequencial(int):
         if value < 1:
             raise ValueError(f"Invalid Sequencial: {value}")
         return int.__new__(cls, value)
+
+
+class IngestionWindow:
+    def __init__(self, data_inicial: YearMonthDay, data_final: YearMonthDay):
+        self._validate_ingestion_window(data_inicial, data_final)
+        self.data_inicial = data_inicial
+        self.data_final = data_final
+
+    @classmethod
+    def from_datetime(cls, data_inicial: datetime, data_final: datetime):
+        return cls(
+            YearMonthDay(data_inicial.strftime("%Y%m%d")),
+            YearMonthDay(data_final.strftime("%Y%m%d")),
+        )
+
+    def _validate_ingestion_window(
+        self, data_inicial: YearMonthDay, data_final: YearMonthDay
+    ):
+        if data_inicial > data_final:
+            raise ValueError(f"Invalid ingestion window: {data_inicial} > {data_final}")

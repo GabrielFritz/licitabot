@@ -1,10 +1,8 @@
 import asyncio
-from datetime import timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from licitabot.settings import settings, logger
 from faststream.rabbit import RabbitBroker
-from licitabot.domain.value_objects import YearMonthDay
-from licitabot.domain.services import time_service
+from licitabot.domain.services import time_service, ingestion_window_service
 
 broker = RabbitBroker(settings.RABBITMQ_URL, logger=logger)
 scheduler = AsyncIOScheduler()
@@ -12,22 +10,18 @@ scheduler = AsyncIOScheduler()
 
 async def publish_raw_contratacao_ingestion_message():
     """Job function (can be scheduled or triggered manually)."""
-    data_final = time_service.get_datetime_now()
-    data_inicial = data_final - timedelta(
-        days=settings.RAW_CONTRATACAO_INGESTION_DEFAULT_DELTA
-    )
-
-    data_inicial = YearMonthDay(data_inicial.strftime("%Y%m%d"))
-    data_final = YearMonthDay(data_final.strftime("%Y%m%d"))
+    ingestion_window = ingestion_window_service.get_ingestion_window()
 
     await broker.publish(
         {
-            "dataInicial": data_inicial,
-            "dataFinal": data_final,
+            "dataInicial": ingestion_window.data_inicial,
+            "dataFinal": ingestion_window.data_final,
         },
         "raw_contratacao_ingestion_triggered",
     )
-    logger.info(f"Published ingestion message: {data_inicial} → {data_final}")
+    logger.info(
+        f"Published ingestion message: {ingestion_window.data_inicial} → {ingestion_window.data_final}"
+    )
 
 
 async def start_app():

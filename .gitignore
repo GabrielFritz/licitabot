@@ -210,3 +210,4 @@ coverage.xml
 start_local.sh 
 
 .ssh_creds/
+.env.dev

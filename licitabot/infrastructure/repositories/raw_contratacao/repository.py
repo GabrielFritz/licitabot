@@ -22,15 +22,20 @@ class RawContratacaoRepository(RawContratacaoRepositoryInterface):
     async def get(
         self, numero_controle_pncp: NumeroControlePNCP
     ) -> Optional[RawContratacao]:
+        result = await self._get_orm(numero_controle_pncp)
+        if not result:
+            return None
+        return self._from_orm(result)
+
+    async def _get_orm(
+        self, numero_controle_pncp: NumeroControlePNCP
+    ) -> Optional[RawContratacaoModel]:
         result = await self.session.execute(
             select(RawContratacaoModel)
             .options(selectinload(RawContratacaoModel.items))
             .where(RawContratacaoModel.numero_controle_pncp == numero_controle_pncp)
         )
-        result = result.scalar_one_or_none()
-        if not result:
-            return None
-        return self._from_orm(result)
+        return result.scalar_one_or_none()
 
     def _from_orm(self, model: RawContratacaoModel) -> RawContratacao:
         return RawContratacao(
@@ -61,9 +66,7 @@ class RawContratacaoRepository(RawContratacaoRepositoryInterface):
         )
 
     async def save(self, entity: RawContratacao, force: bool = False) -> None:
-        existing_raw_contratacao = await self.session.get(
-            RawContratacaoModel, entity.numero_controle_pncp
-        )
+        existing_raw_contratacao = await self._get_orm(entity.numero_controle_pncp)
 
         entity_orm = self._to_orm(entity)
 

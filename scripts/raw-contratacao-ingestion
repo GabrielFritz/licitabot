@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Check if --dev flag is present and remove it from arguments
+COMPOSE_FILES="-f docker-compose.yml"
+ARGS=()
+
+for arg in "$@"; do
+    if [ "$arg" = "--dev" ]; then
+        COMPOSE_FILES="-f docker-compose.yml -f docker-compose.dev.yml"
+    else
+        ARGS+=("$arg")
+    fi
+done
+
+docker-compose $COMPOSE_FILES build base-service
+docker-compose $COMPOSE_FILES run --rm base-service raw-contratacao-ingestion-cli "${ARGS[@]}"

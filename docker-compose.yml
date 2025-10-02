@@ -44,6 +44,8 @@ services:
     container_name: rabbitmq
     env_file:
       - .env
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit consumer_timeout 36000000
     ports:
       - "15672:15672"
     volumes:
@@ -64,6 +66,30 @@ services:
       - .env
     command: ["alembic", "upgrade", "head"]
     profiles: ["setup"]
+    restart: "no"
+  
+  base-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: base-service
+    env_file:
+      - .env
+    depends_on:
+      raw-contratacao-ingestion-consumer:
+        condition: service_healthy
+    restart: "no"
+  
+  debug-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: debug-service
+    profiles: ["debug"]
+    env_file:
+      - .env
     restart: "no"
 
 networks:

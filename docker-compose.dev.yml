@@ -25,17 +25,12 @@ services:
       - .env.dev
   
   base-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: base
-    container_name: base-service
     env_file:
       - .env.dev
-    depends_on:
-      raw-contratacao-ingestion-consumer:
-        condition: service_healthy
-    profiles: ["base"]
+
+  debug-service:
+    env_file:
+      - .env.dev
 
   rabbitmq:
     env_file:

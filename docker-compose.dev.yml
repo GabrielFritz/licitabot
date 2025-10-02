@@ -9,16 +9,6 @@ services:
   licitabot-scheduler:
     env_file:
       - .env.dev
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    env_file:
-      - .env.dev
-    ports:
-      - "8080:80"
-    volumes:
-      - ./pgadmin-servers.json:/pgadmin4/servers.json
   
   setup-service:
     env_file:
@@ -32,6 +22,20 @@ services:
     env_file:
       - .env.dev
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    env_file:
+      - .env.dev
+    ports:
+      - "8080:80"
+    volumes:
+      - ./pgadmin-servers.json:/pgadmin4/servers.json
+
   rabbitmq:
+    env_file:
+      - .env.dev
+
+  litellm:
     env_file:
       - .env.dev

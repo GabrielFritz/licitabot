@@ -47,6 +47,11 @@ class HTTPSettings(BaseModel):
     timeout: float = 60.0
 
 
+class LiteLLMSettings(BaseModel):
+    base_url: str = "os.environ/LITELLM__BASE_URL"
+    api_key: str = "os.environ/LITELLM__API_KEY"
+
+
 class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
@@ -58,6 +63,7 @@ class Settings(BaseSettings):
     rabbitmq: RabbitMQSettings = RabbitMQSettings()
     ingestion_services: IngestionServicesSettings = IngestionServicesSettings()
     http: HTTPSettings = HTTPSettings()
+    litellm: LiteLLMSettings = LiteLLMSettings()
 
 
 settings = Settings()

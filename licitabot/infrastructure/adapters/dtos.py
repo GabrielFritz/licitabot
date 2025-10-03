@@ -1,5 +1,5 @@
 from typing import Any, Dict, List
-
+from typing import Optional, Literal
 from pydantic import BaseModel, RootModel, conint, ConfigDict, field_validator
 
 from licitabot.domain.value_objects import (
@@ -113,3 +113,22 @@ class PNCPContratacaoItemsResultDTO(RootModel[List[entryDTO]]):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     pass
+
+
+class LiteLLMEmbeddingsParamsDTO(BaseModel):
+    model: str = "text-embedding-3-small"
+    input: str
+    encoding_format: Optional[Literal["float", "base64"]] = None
+    user: Optional[str] = None
+
+
+class LiteLLMEmbeddingItemDTO(BaseModel):
+    object: str = "embedding"
+    embedding: List[float]
+    index: int
+
+
+class LiteLLMEmbeddingsResultDTO(BaseModel):
+    model: str
+    data: List[LiteLLMEmbeddingItemDTO]
+    usage: Optional[Dict[str, Any]] = None

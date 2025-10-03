@@ -1,18 +1,13 @@
 import asyncio
-from licitabot.infrastructure.repositories.item_contratacao.repository import (
-    ItemContratacaoReadOnlyRepository,
-)
-from licitabot.infrastructure.database.session import create_session
-from licitabot.domain.value_objects import NumeroControlePNCP
+from licitabot.infrastructure.adapters.litellm_adapter import LiteLLMAdapter
+from licitabot.infrastructure.adapters.dtos import LiteLLMEmbeddingsParamsDTO
 
 
 async def main():
-    async with await create_session() as session:
-        repository = ItemContratacaoReadOnlyRepository(session)
-        item_contratacao = await repository.get(
-            NumeroControlePNCP("17935388000115-1-000095/2025"), 159
-        )
-        print(item_contratacao)
+    adapter = LiteLLMAdapter()
+    params = LiteLLMEmbeddingsParamsDTO(input="Hello, world!")
+    result = await adapter.get_embeddings(params)
+    print(result)
 
 
 if __name__ == "__main__":
